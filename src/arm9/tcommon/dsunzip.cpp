@@ -20,7 +20,7 @@ bool unzip(const char* zipFile, const char* targetFolder) {
 		return false; //zipFile doesn't exist or isn't valid
 	}
 
-	char targetPath[MAXPATHLEN];
+	char targetPath[PATH_MAX];
 	strcpy(targetPath, targetFolder);
 	mkdirs(targetPath);
 
@@ -100,7 +100,7 @@ Archive::~Archive() {
 }
 
 bool Archive::LoadFileEntries(const char* filename) {
-	char path[MAXPATHLEN];
+	char path[PATH_MAX];
 	sprintf(path, "cache/%s", filename);
 	char* periodChar = strrchr(path, '.');
 	if (!periodChar) periodChar = path+strlen(path);
@@ -148,7 +148,7 @@ bool Archive::SaveFileEntries(const char* filename) {
 		return false;
 	}
 
-	char path[MAXPATHLEN];
+	char path[PATH_MAX];
 	sprintf(path, "cache/%s", filename);
 	char* periodChar = strrchr(path, '.');
 	if (!periodChar) periodChar = path+strlen(path);
@@ -285,7 +285,7 @@ int findCentralDirectory(FILE* file, int pos) {
 }
 
 Archive* openZipFile(const char* filename, const char* prefix, void (*callback)(int, int, const char*)) {
-    char nameBuffer[MAXPATHLEN];
+    char nameBuffer[PATH_MAX];
     sprintf(nameBuffer, "Opening %s...", filename);
 
     if (callback) callback(0, 0, nameBuffer);

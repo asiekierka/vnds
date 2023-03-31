@@ -1,74 +1,110 @@
-export SHORTNAME	:= VNDS
-export LONGNAME 	:= Visual Novel Reader
-export VERSION 		:= 1.4.9
-ICON 		:= -b logo.bmp
-EFS			:= $(CURDIR)/tools/efs/efs
+# SPDX-License-Identifier: CC0-1.0
+#
+# SPDX-FileContributor: Antonio Niño Díaz, 2023
 
-#------------------------------------------------------------------------------
-.SUFFIXES:
-#------------------------------------------------------------------------------
-ifeq ($(strip $(DEVKITARM)),)
-$(error "Please set DEVKITARM in your environment. export DEVKITARM=<path to>devkitARM)
+BLOCKSDS	?= /opt/blocksds/core
+BLOCKSDSEXT	?= /opt/blocksds/external
+
+# User config
+# ===========
+
+NAME		:= vnds
+
+GAME_TITLE	:= VNDS
+GAME_SUBTITLE	:= Visual Novel Reader
+GAME_AUTHOR	:= 1.4.10-pre
+GAME_ICON	:= logo.bmp
+
+# DLDI and internal SD slot of DSi
+# --------------------------------
+
+# Root folder of the SD image
+SDROOT		:= sdroot
+# Name of the generated image it "DSi-1.sd" for no$gba in DSi mode
+SDIMAGE		:= image.bin
+
+# Source code paths
+# -----------------
+
+NITROFATDIR	:=
+
+# Tools
+# -----
+
+MAKE		:= make
+RM		:= rm -rf
+
+# Verbose flag
+# ------------
+
+ifeq ($(VERBOSE),1)
+V		:=
+else
+V		:= @
 endif
 
-include $(DEVKITARM)/ds_rules
+# Directories
+# -----------
 
-export TARGET := $(shell basename $(CURDIR))
-export TOPDIR := $(CURDIR)
+ARM9DIR		:= arm9
+ARM7DIR		:= arm7
 
-.PHONY: $(TARGET).arm7 $(TARGET).arm9
+# Build artfacts
+# --------------
 
-#------------------------------------------------------------------------------
-# main targets
-#------------------------------------------------------------------------------
-all: $(TARGET).nds $(TARGET)-EFS.nds
+NITROFAT_IMG	:= build/nitrofat.bin
+ROM		:= $(NAME).nds
 
-#------------------------------------------------------------------------------
+# Targets
+# -------
 
-dist: $(TARGET).nds
-	rm -rf vnds
-	@mkdir vnds
-	cp $(TARGET).nds vnds/
-	make clean
-	cp -r src/ vnds
-	cp -r skins/ vnds
-	cp -r manual/ vnds
-	#cp -r tools/ vnds
-	cp config.ini vnds
-	cp _default.ttf vnds
-	cp license.txt vnds
-	cp README vnds
-	cp logo.bmp vnds
-	#cp xmlParser-license.txt vnds
-	cp ChangeLog vnds
-	cp Makefile vnds
-	mkdir vnds/novels
-	find vnds/ -type d -name ".svn" -depth -exec rm -rf '{}' \;
-	tar czvf vnds-$(VERSION).tar.gz vnds/
+.PHONY: all clean arm9 arm7 dldipatch sdimage
 
-$(TARGET)-EFS.nds: $(TARGET).nds
-	@ndstool -c $(TARGET)-EFS.nds -7 $(TARGET).arm7 -9 $(TARGET).arm9 $(ICON) "$(SHORTNAME);$(LONGNAME);$(VERSION)" -d $(CURDIR)/vnds
-	@$(EFS) $(notdir $@)
+all: $(ROM)
 
-$(TARGET).nds: $(TARGET).arm7 $(TARGET).arm9
-	@ndstool -c $(TARGET).nds -7 $(TARGET).arm7 -9 $(TARGET).arm9 $(ICON) "$(SHORTNAME);$(LONGNAME);$(VERSION)"
-
-#------------------------------------------------------------------------------
-$(TARGET).arm7	: arm7/$(TARGET).elf
-$(TARGET).arm9	: arm9/$(TARGET).elf
-
-#------------------------------------------------------------------------------
-arm7/$(TARGET).elf:
-	$(MAKE) -C src/arm7
-	
-#------------------------------------------------------------------------------
-arm9/$(TARGET).elf:
-	$(MAKE) -C src/arm9
-
-#------------------------------------------------------------------------------
-
-#------------------------------------------------------------------------------
 clean:
-	$(MAKE) -C src/arm9 clean
-	$(MAKE) -C src/arm7 clean
-	rm -f $(TARGET).ds.gba $(TARGET).nds $(TARGET)-EFS.nds $(TARGET).arm7 $(TARGET).arm9
+	@echo "  CLEAN"
+	$(V)$(MAKE) -f Makefile.arm9 clean --no-print-directory
+	$(V)$(MAKE) -f Makefile.arm7 clean --no-print-directory
+	$(V)$(RM) $(ROM) build $(SDIMAGE)
+
+arm9:
+	$(V)+$(MAKE) -f Makefile.arm9 --no-print-directory
+
+arm7:
+	$(V)+$(MAKE) -f Makefile.arm7 --no-print-directory
+
+ifneq ($(strip $(NITROFATDIR)),)
+# Additional arguments for ndstool
+NDSTOOL_FAT	:= -F $(NITROFAT_IMG)
+
+$(NITROFAT_IMG): $(NITROFATDIR)
+	@echo "  MKFATIMG $@ $(NITROFATDIR)"
+	$(V)$(BLOCKSDS)/tools/mkfatimg/mkfatimg -t $(NITROFATDIR) $@ 0
+
+# Make the NDS ROM depend on the filesystem image only if it is needed
+$(ROM): $(NITROFAT_IMG)
+endif
+
+# Combine the title strings
+ifeq ($(strip $(GAME_SUBTITLE)),)
+    GAME_FULL_TITLE := $(GAME_TITLE);$(GAME_AUTHOR)
+else
+    GAME_FULL_TITLE := $(GAME_TITLE);$(GAME_SUBTITLE);$(GAME_AUTHOR)
+endif
+
+$(ROM): arm9 arm7
+	@echo "  NDSTOOL $@"
+	$(V)$(BLOCKSDS)/tools/ndstool/ndstool -c $@ \
+		-7 build/arm7.elf -9 build/arm9.elf \
+		-b $(GAME_ICON) "$(GAME_FULL_TITLE)" \
+		$(NDSTOOL_FAT)
+
+sdimage:
+	@echo "  MKFATIMG $(SDIMAGE) $(SDROOT)"
+	$(V)$(BLOCKSDS)/tools/mkfatimg/mkfatimg -t $(SDROOT) $(SDIMAGE) 0
+
+dldipatch: $(ROM)
+	@echo "  DLDITOOL $(ROM)"
+	$(V)$(BLOCKSDS)/tools/dlditool/dlditool \
+		$(BLOCKSDS)/tools/dldi/r4tfv2.dldi $(ROM)

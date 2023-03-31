@@ -206,7 +206,7 @@ u8 Text::ProcessEscapeCode(const char* string, u16 defaultColor) {
 	if (len == 1 && string[0] == '0') {
 		//OK
 	} else {
-		if (EOF == siscanf(string, "%d;%d", &c, &brightness)) {
+		if (EOF == sscanf(string, "%d;%d", &c, &brightness)) {
 			return 0;
 		}
 	}

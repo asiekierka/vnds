@@ -81,7 +81,7 @@ XmlFile::~XmlFile() {
 XmlNode* XmlFile::Open(const char* filename) {
 	FileHandle* fh = fhOpen(filename);
 	if (!fh) {
-		return false;
+		return nullptr;
 	}
 
 	Close();

@@ -167,7 +167,7 @@ Texture* loadTexture(TextureManager* texmgr, GL_TEXTURE_TYPE_ENUM format,
 
 bool loadImage(const char* file, u16* out, u8* outA, u16 w, u16 h, int format) {
     if (format == 0) {
-        char path[MAXPATHLEN];
+        char path[PATH_MAX];
     	sprintf(path, "%s.png", file);
 
         FILE* file = fopen(path, "rb");
@@ -187,9 +187,9 @@ bool loadImage(const char* file, u16* out, u8* outA, u16 w, u16 h, int format) {
         return false;
     }
 
-    char dtaPath[MAXPATHLEN];
+    char dtaPath[PATH_MAX];
     sprintf(dtaPath, "%s.dta", file);
-    char palPath[MAXPATHLEN];
+    char palPath[PATH_MAX];
     sprintf(palPath, "%s.pal", file);
 
     FileHandle* fhDTA = fhOpen(dtaPath);

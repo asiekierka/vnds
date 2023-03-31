@@ -72,14 +72,14 @@ void VNDS::Idle() {
 
 	//Preload the next png image
 	#ifdef IMG_LOAD_PROFILE
-		iprintf("\x1b[s\x1b[0;28H%s\x1b[u",
+		printf("\x1b[s\x1b[0;28H%s\x1b[u",
 				(pngStream->IsImageReady() ? "100%" : "    "));
 	#endif
 
 	if (pngStream->IsStreaming()) {
 		#ifdef IMG_LOAD_PROFILE
 			if (pngStream->height > 0) {
-				iprintf("\x1b[s\x1b[0;28H%3d%%\x1b[u", 100 * pngStream->line / pngStream->height);
+				printf("\x1b[s\x1b[0;28H%3d%%\x1b[u", 100 * pngStream->line / pngStream->height);
 			}
 		#endif
 
@@ -92,7 +92,8 @@ void VNDS::Idle() {
 			Command cmd = scriptEngine->GetCommand(n);
 			if (cmd.id == SETIMG) {
 			    char path[MAXPATHLEN];
-			    sprintf(path, "foreground/%s", cmd.setimg.path);
+			    snprintf(path, MAXPATHLEN - 1, "foreground/%s", cmd.setimg.path);
+                            path[MAXPATHLEN - 1] = '\0';
 			    if (!graphicsEngine->IsImageCached(path)) {
 					pngStream->Start(foregroundArchive, path);
 					break;
@@ -225,14 +226,14 @@ void onZipProgress(int val, int max, const char* message) {
 	if (max >= 0) {
 		if (message) {
 			int messageL = strlen(message);
-			iprintf("\x1b[16;0H%*s%s%*s", (32-messageL+1)/2, " ", message, (32-messageL)/2, " ");
+			printf("\x1b[16;0H%*s%s%*s", (32-messageL+1)/2, " ", message, (32-messageL)/2, " ");
 		} else {
-			iprintf("\x1b[16;0H                               ");
+			printf("\x1b[16;0H                               ");
 		}
 		if (max > 0) {
-			iprintf("\x1b[17;14H%3d%%", 100*val/max);
+			printf("\x1b[17;14H%3d%%", 100*val/max);
 		} else {
-			iprintf("\x1b[17;0H                               ");
+			printf("\x1b[17;0H                               ");
 		}
 	} else {
 		zipError = true;
@@ -252,7 +253,7 @@ void onZipProgress(int val, int max, const char* message) {
 	    " supported.                     "
 	    "                                "
 	    "--------------------------------";
-	    iprintf(warning);
+	    printf(warning);
 
 	    waitForAnyKey();
 	}

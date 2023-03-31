@@ -39,15 +39,15 @@ u8 as_default_delay;
 
 // initialize the ASLib
 void AS_Init(u8 mode, u32 mp3BufferSize) {
-	//Set up memory in a non-cache area
-	u32 mem = (u32)memalign(32, sizeof(IPC_SoundSystem)) | 0x400000;
-	ipcSound = (IPC_SoundSystem*)mem;
+    //Set up memory in a non-cache area
+    u32 mem = (u32)memUncached(memalign(32, sizeof(IPC_SoundSystem)));
+    ipcSound = (IPC_SoundSystem*)mem;
 
     memset(ipcSound, 0, sizeof(IPC_SoundSystem));
-	if (mp3BufferSize > 0) {
-		//Set up memory in a non-cache area
-		ipcSound->mp3.helixbuffer = (u32)memalign(32, mp3BufferSize) | 0x400000;
-	}
+    if (mp3BufferSize > 0) {
+        //Set up memory in a non-cache area
+        // ipcSound->mp3.helixbuffer = (u32)memUncached(memalign(32, mp3BufferSize));
+    }
 
     int i, nb_chan = 16;
 
@@ -58,14 +58,14 @@ void AS_Init(u8 mode, u32 mp3BufferSize) {
 
     if (!fifoSendValue32(TCOMMON_FIFO_CHANNEL_ARM7, MSG_INIT_SOUND_ARM7)) {
     	consoleDemoInit();
-    	iprintf("Fatal error while initializing sound.\n");
+    	printf("Fatal error while initializing sound.\n");
     	waitForAnyKey();
     	return;
     }
 
 	//consoleDemoInit();
-	//iprintf("Waiting\n");
-	//iprintf("%d ", ipcSound->chan[0].cmd);
+	//printf("Waiting\n");
+	//printf("%d ", ipcSound->chan[0].cmd);
 
     // initialize channels
     for (i = 0; i < 16; i++) {
@@ -127,7 +127,7 @@ void AS_Init(u8 mode, u32 mp3BufferSize) {
 
     if (!fifoSendValue32(TCOMMON_FIFO_CHANNEL_ARM7, (u32)ipcSound)) { //SendAddress doesn't work, ipcSound outside normal RAM
     	consoleDemoInit();
-    	iprintf("Fatal error while initializing sound. (IPC_INIT)\n");
+    	printf("Fatal error while initializing sound. (IPC_INIT)\n");
     	waitForAnyKey();
     	return;
     }
@@ -145,7 +145,7 @@ void AS_Init(u8 mode, u32 mp3BufferSize) {
 		}
     }
 
-	//iprintf("Done Waiting\n");
+	//printf("Done Waiting\n");
 }
 
 // play a sound using the priority system

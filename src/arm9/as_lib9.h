@@ -39,13 +39,8 @@
 
 //-----------------------------------------------------------
 
-// mp3 static defines
-#define MAX_NGRAN           2           // max granules
-#define MAX_NCHAN           2           // max channels
-#define MAX_NSAMP           576         // max samples per channel, per granule
-
 // buffer sizes, should fit any usage (feel free to adjust if needed)
-#define AS_AUDIOBUFFER_SIZE 24 * MAX_NCHAN * MAX_NGRAN * MAX_NSAMP
+#define AS_AUDIOBUFFER_SIZE 24 * 2 * 1152
 #define AS_FILEBUFFER_SIZE  8 * 1024   // file buffer size
 
 // file access functions
@@ -176,6 +171,7 @@ typedef struct
 typedef struct
 {
 	u32 helixbuffer;
+    u32 MPT_pow_4_3;
     s8  *mixbuffer;
     u32 buffersize;
     s32 rate;

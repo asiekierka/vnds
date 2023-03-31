@@ -83,7 +83,7 @@ bool PNGStream::Start(Archive* archive, const char* name) {
 
 	info_ptr = png_create_info_struct(png_ptr);
 	if (!info_ptr) {
-		png_destroy_read_struct(&png_ptr, png_infopp_NULL, png_infopp_NULL);
+		png_destroy_read_struct(&png_ptr, NULL, NULL);
 		png_ptr = NULL;
 		fhClose(file); file = NULL; error = true;
 		return false;
@@ -91,7 +91,7 @@ bool PNGStream::Start(Archive* archive, const char* name) {
 
 	end_ptr = png_create_info_struct(png_ptr);
 	if (!end_ptr) {
-		png_destroy_read_struct(&png_ptr, &info_ptr, png_infopp_NULL);
+		png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
 		png_ptr = NULL;
 		fhClose(file); file = NULL; error = true;
 		return false;
@@ -112,7 +112,7 @@ bool PNGStream::Start(Archive* archive, const char* name) {
 
 	png_set_sig_bytes(png_ptr, sig_read);
 	png_read_info(png_ptr, info_ptr);
-	png_get_IHDR(png_ptr, info_ptr, &width, &height, &bit_depth, &color_type, &interlace_type, int_p_NULL, int_p_NULL);
+	png_get_IHDR(png_ptr, info_ptr, &width, &height, &bit_depth, &color_type, &interlace_type, NULL, NULL);
 
 	this->width = MIN(width, 256);
 	this->height = MIN(height, 192);
@@ -121,7 +121,7 @@ bool PNGStream::Start(Archive* archive, const char* name) {
 	png_set_packing(png_ptr);
 
 	if (color_type == PNG_COLOR_TYPE_PALETTE) png_set_palette_to_rgb(png_ptr);
-	if (color_type == PNG_COLOR_TYPE_GRAY && bit_depth < 8) png_set_gray_1_2_4_to_8(png_ptr);
+	if (color_type == PNG_COLOR_TYPE_GRAY && bit_depth < 8) png_set_expand_gray_1_2_4_to_8(png_ptr);
 	if (png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS)) png_set_tRNS_to_alpha(png_ptr);
 	png_set_filler(png_ptr, 0xff, PNG_FILLER_AFTER);
 
@@ -154,7 +154,7 @@ bool PNGStream::ReadLine() {
 	}
 
 	u32 stream_row[512];
-	png_read_row(png_ptr, (png_byte*)stream_row, png_bytep_NULL);
+	png_read_row(png_ptr, (png_byte*)stream_row, NULL);
 	src = (u32*)stream_row;
 
 	for (int x = 0; x < width; x++) {

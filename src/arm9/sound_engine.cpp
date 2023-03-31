@@ -35,7 +35,8 @@ void SoundEngine::Reset() {
 	soundBufferL = 0;
 }
 void SoundEngine::Update() {
-	aacPlayer->Update();
+	// TODO: AAC
+	// aacPlayer->Update();
     AS_SoundVBL();
 }
 void SoundEngine::SetMusic(const char* path) {
@@ -87,7 +88,8 @@ void SoundEngine::PlaySound(const char* path, int times) {
 				}
 			}
 		} else if (soundType == ST_aac) {
-			aacPlayer->StopSound();
+			// TODO: AAC
+			// aacPlayer->StopSound();
 		}
 	} else {
 		if (mute) {
@@ -102,9 +104,10 @@ void SoundEngine::PlaySound(const char* path, int times) {
 	    	//.aac .mp4
 	    	soundType = ST_aac;
 
-			if (aacPlayer->PlaySound(soundArchive, soundPath, preferences->GetSoundVolume())) {
+			// TODO: AAC
+			/* if (aacPlayer->PlaySound(soundArchive, soundPath, preferences->GetSoundVolume())) {
 				vnLog(EL_verbose, COM_SOUND, "Playing sound: %s %d", soundPath, times);
-			} else {
+			} else */ {
 				vnLog(EL_missing, COM_SOUND, "Can't find sound file: %s", soundPath);
 			}
 	    } else {
@@ -143,7 +146,8 @@ void SoundEngine::ReplaySound() {
 			swiWaitForVBlank();
 		}
 	} else if (soundType == ST_aac) {
-		aacPlayer->PlaySound(soundArchive, soundPath);
+		// TODO: AAC
+		// aacPlayer->PlaySound(soundArchive, soundPath);
 	}
 }
 

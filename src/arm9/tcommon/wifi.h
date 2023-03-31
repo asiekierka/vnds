@@ -16,7 +16,7 @@ class WifiSettings {
 
 	public:
 		Wifi_AccessPoint ap;
-		unsigned char wepKey[16];
+		unsigned char wepKey[16+1];
 		WepKeyType wepKeyType;
 		u8  wepMode;
 		u8  dhcp; // 0=none, 1=get IP&dns, 2=get IP&not dns

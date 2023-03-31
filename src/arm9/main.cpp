@@ -52,7 +52,7 @@ void libfatFail() {
     " the root folder of the card.   "
     "                                "
     "--------------------------------";
-    iprintf(warning);
+    printf(warning);
 
     while (true) {
         swiWaitForVBlank();
@@ -71,7 +71,7 @@ void installFail() {
     " is stored in /vnds/            "
     "                                "
     "--------------------------------";
-    iprintf(warning);
+    printf(warning);
 
     while (true) {
         swiWaitForVBlank();
@@ -119,7 +119,8 @@ int main(int argc, char** argv) {
     //Timer0 + Timer1 are used by as_lib
     //Timer2 is for AAC
     //Timer3 is for Wifi
-    InitAACPlayer();
+    // TODO: AAC
+    //InitAACPlayer();
 
     //Init ASLib
 	AS_Init(AS_MODE_MP3, 24*1024);

@@ -1,3 +1,4 @@
+#include <ctime>
 #include "res.h"
 
 #include "gba-jpeg-decode.h"

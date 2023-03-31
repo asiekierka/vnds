@@ -27,9 +27,6 @@
 #include <nds.h>
 #include <string.h>
 
-#include "helix/mp3dec.h"
-#include "helix/mp3common.h"
-#include "helix/real/coder.h"
 #include "as_lib7.h"
 
 // internal functions
@@ -42,17 +39,7 @@ void AS_StereoDesinterleave(s16 *input, s16 *outputL, s16 *outputR, u32 samples)
 
 IPC_SoundSystem* ipcSound = 0;
 
-// variables for the mp3 player
-HMP3Decoder hMP3Decoder;
-MP3FrameInfo mp3FrameInfo;
-u8 *readPtr;
-int bytesLeft;
-
-s16 audioBuf[AS_DECODEBUFFER_SIZE];     // buffer for the decoded mp3 audio
-int nAudioBufStart;
-int nAudioBuf;
 u8 stereo;
-
 
 // the sound engine, must be called each VBlank
 void AS_SoundVBL() {
@@ -153,7 +140,7 @@ void AS_SoundVBL() {
 void AS_MP3Engine() {
     if (!ipcSound) return;
 
-	MP3Player* mp3 = &ipcSound->mp3;
+    MP3Player* mp3 = &ipcSound->mp3;
 
     // time-varying mp3 functions are placed oustide the VBL function
     if (mp3->cmd & MP3CMD_STOP)  {
@@ -174,31 +161,22 @@ void AS_MP3Engine() {
             mp3->cmd |= MP3CMD_MIX;
         } else {
 #endif
-            //Set variables
-        	mp3->prevtimer = 0;
-        	mp3->numsamples = 0;
-            readPtr = mp3->mp3buffer;
-            bytesLeft = mp3->mp3filesize;
-            nAudioBuf = 0;
-            nAudioBufStart = 0;
 
-            // find the first sync word
-            u32 offset = MP3FindSyncWord(readPtr, bytesLeft);
-            readPtr += offset;
-            bytesLeft -= offset;
+            // set variables
+            mp3->prevtimer = 0;
+            mp3->numsamples = 0;
 
-            // gather information about the format
-            MP3GetNextFrameInfo(hMP3Decoder, &mp3FrameInfo, readPtr);
-            stereo = mp3FrameInfo.nChans >> 1;
+            // TODO: Start loading buffer, decode first frame,
+            // populate stereo, populate mp3->rate
+
+            // readPtr = mp3->mp3buffer;
+            // readPtrLen = mp3->mp3filesize;
 
             // fill the half of the buffer
-            AS_RegenStreamCallback((s16*)mp3->mixbuffer, mp3->buffersize >> 1);
-            mp3->soundcursor = mp3->buffersize >> 1;
+            //AS_RegenStreamCallback((s16*)mp3->mixbuffer, mp3->buffersize >> 1);
+            //mp3->soundcursor = mp3->buffersize >> 1;
 
-            // set the mp3 to play at its original sampling rate
-            MP3GetLastFrameInfo(hMP3Decoder, &mp3FrameInfo);
-            mp3->rate = mp3FrameInfo.samprate;
-            AS_SetTimer(mp3FrameInfo.samprate);
+            //AS_SetTimer(mp3->rate);
 
             // start playing
             mp3->cmd |= MP3CMD_MIX;
@@ -268,41 +246,29 @@ void AS_SetTimer(int freq)
     }
 }
 
-// clear some buffers to avoid clicking on new mp3 start
-void AS_MP3ClearBuffers(){
-    MP3DecInfo *mp3DecInfo = (MP3DecInfo*)hMP3Decoder;
-	memset(mp3DecInfo->FrameHeaderPS, 0, sizeof(FrameHeader));
-	memset(mp3DecInfo->SideInfoPS, 0, sizeof(SideInfo));
-	memset(mp3DecInfo->ScaleFactorInfoPS, 0, sizeof(ScaleFactorInfo));
-	memset(mp3DecInfo->HuffmanInfoPS, 0, sizeof(HuffmanInfo));
-	memset(mp3DecInfo->DequantInfoPS, 0, sizeof(DequantInfo));
-	memset(mp3DecInfo->IMDCTInfoPS, 0, sizeof(IMDCTInfo));
-	memset(mp3DecInfo->SubbandInfoPS, 0, sizeof(SubbandInfo));
-	memset(mp3DecInfo->IMDCTInfoPS, 0, sizeof(IMDCTInfo));
-	memset(mp3DecInfo->SubbandInfoPS, 0, sizeof(SubbandInfo));
-}
-
 // fill the given stream buffer with numsamples samples. (based on ThomasS code)
 void AS_RegenStreamCallback(s16 *stream, u32 numsamples)
 {
-    int outSample, restSample, minSamples, offset, err;
+    // TODO
+    /* int outSample, restSample, minSamples, offset, err;
     outSample = 0;
 
     // fill buffered data into stream
-    minSamples = MIN(nAudioBuf, (int)numsamples);
+    minSamples = nAudioBuf;
+    if (minSamples > numsamples) minSamples = numsamples;
     if (minSamples > 0) {
 
         // copy data from audioBuf to stream
         numsamples -= minSamples;
 
-        if(stereo)
-            AS_StereoDesinterleave(audioBuf + nAudioBufStart, stream + outSample, stream + outSample + ipcSound->mp3.buffersize, minSamples);
-        else
-            memcpy(stream + outSample, audioBuf + nAudioBufStart, minSamples * sizeof(s16));
+        memcpy(stream + outSample, audioBuf[0] + nAudioBufStart, minSamples * sizeof(s16));
+        if(stereo) {
+            memcpy(stream + outSample + ipcSound->mp3.buffersize, audioBuf[1] + nAudioBufStart, minSamples * sizeof(s16));
+        }
 
         outSample += minSamples;
 
-        nAudioBufStart += (stereo ? minSamples << 1 : minSamples);
+        nAudioBufStart += minSamples;
         nAudioBuf -= minSamples;
 
         if (nAudioBuf <= 0) {
@@ -314,52 +280,19 @@ void AS_RegenStreamCallback(s16 *stream, u32 numsamples)
     // if more data is still needed then decode some mp3 frames
     if (numsamples > 0)  {
 
-        // if mp3 is set to loop indefinitely, don't bother with how many data is left
-        if((bytesLeft < 2*MAINBUF_SIZE) && ipcSound->mp3.loop && ipcSound->mp3.stream)
-            bytesLeft += ipcSound->mp3.mp3filesize;
-
-        // decode a mp3 frame to outBuf
+        // TODO: decode a mp3 frame to outBuf
         do {
-
-            // find the start of the next MP3 frame (assume EOF if no sync found)
-            offset = MP3FindSyncWord(readPtr, bytesLeft);
-            if (offset < 0) {
-
-                // if mp3 is set to loop & no frame is found, retry from the start
-                if (ipcSound->mp3.loop && !ipcSound->mp3.stream) {
-                    readPtr = ipcSound->mp3.mp3buffer;
-                    bytesLeft = ipcSound->mp3.mp3filesize;
-                    offset = MP3FindSyncWord(readPtr, bytesLeft);
-                } else {
-                    AS_MP3Stop();
-                    ipcSound->mp3.state = MP3ST_OUT_OF_DATA;
-                }
-                return;
-            }
-            readPtr += offset;
-            bytesLeft -= offset;
-
-            // decode one MP3 frame to the audio buffer
-            err = MP3Decode(hMP3Decoder, &readPtr, &bytesLeft, audioBuf, 0);
-            if (err) {
-            	AS_MP3Stop();
-                ipcSound->mp3.state = MP3ST_DECODE_ERROR;
-                return;
-            }
-
             // copy the decoded data to the stream
-            MP3GetLastFrameInfo(hMP3Decoder, &mp3FrameInfo);
-            if(stereo)
-                mp3FrameInfo.outputSamps = mp3FrameInfo.outputSamps >> 1;
-
-            minSamples = MIN(mp3FrameInfo.outputSamps, (int)numsamples);
-            restSample = mp3FrameInfo.outputSamps - numsamples;
+            int outputSamples = err;
+            minSamples = outputSamples;
+            if (minSamples > numsamples) minSamples = numsamples;
+            restSample = outputSamples - numsamples;
             numsamples -= minSamples;
 
-            if(stereo)
-                AS_StereoDesinterleave(audioBuf, stream + outSample, stream + outSample + ipcSound->mp3.buffersize, minSamples);
-            else
-                memcpy(stream + outSample, audioBuf, minSamples * sizeof(s16));
+            memcpy(stream + outSample, audioBuf[0], minSamples * sizeof(s16));
+            if(stereo) {
+                memcpy(stream + outSample + ipcSound->mp3.buffersize, audioBuf[1], minSamples * sizeof(s16));
+            }
 
             outSample += minSamples;
 
@@ -367,7 +300,7 @@ void AS_RegenStreamCallback(s16 *stream, u32 numsamples)
         } while (numsamples > 0);
 
         // set the rest of the decoded data to be used for the next frame
-        nAudioBufStart = (stereo ? minSamples << 1 : minSamples);
+        nAudioBufStart = minSamples;
         nAudioBuf = restSample;
     }
 
@@ -376,7 +309,7 @@ void AS_RegenStreamCallback(s16 *stream, u32 numsamples)
         memcpy(ipcSound->mp3.mp3buffer, ipcSound->mp3.mp3buffer + ipcSound->mp3.mp3buffersize, ipcSound->mp3.mp3buffersize);
         readPtr = readPtr - ipcSound->mp3.mp3buffersize;
         ipcSound->mp3.needdata = true;
-    }
+    } */
 
 }
 
@@ -404,12 +337,12 @@ void AS_MP3Stop()
     ipcSound->mp3.rate = 0;
     ipcSound->mp3.cmd = MP3CMD_NONE;
     ipcSound->mp3.state = MP3ST_STOPPED;
-    AS_MP3ClearBuffers();
+
+    // TODO: MP3 engine
 }
 
 void AS_InitMP3() {
-	AS_SetTimer(0);
-    hMP3Decoder = MP3InitDecoder();
+    AS_SetTimer(0);
 }
 
 void AS_Init(IPC_SoundSystem* ipc) {

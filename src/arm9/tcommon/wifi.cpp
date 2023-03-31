@@ -255,11 +255,15 @@ bool WifiSettings::Load(const char* path) {
 
         r = iniFile.GetRecord("ssid");
         if (r) {
-        	strncpy(ap.ssid, r->AsString(), 33);
+        	strncpy(ap.ssid, r->AsString(), 32);
+		ap.ssid[32] = '\0';
         	ap.ssid_len = strlen(ap.ssid);
         }
         r = iniFile.GetRecord("wepkey");
-        if (r) strncpy((char*)wepKey, r->AsString(), 16);
+        if (r) {
+		strncpy((char*)wepKey, r->AsString(), 16);
+		wepKey[16] = '\0';
+	}
         r = iniFile.GetRecord("wepkeytype");
         if (r) wepKeyType = (strcmp(r->AsString(), "hex") == 0 ? HEX : ASCII);
         r = iniFile.GetRecord("wepmode");

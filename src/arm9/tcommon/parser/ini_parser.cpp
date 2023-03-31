@@ -1,5 +1,6 @@
 #include "ini_parser.h"
 #include <ctype.h>
+#include <dirent.h>
 
 #define SCRIPT_SIZE 8192
 #define BUF_L       4096
@@ -12,18 +13,20 @@ FileList::FileList(const char* folder, const char* ext, bool filesOnly) {
     files = NULL;
     filesL = 0;
 
-    DIR_ITER* dir = diropen(folder);
+    DIR* dir = opendir(folder);
     if (dir) {
-        struct stat st;
-        char filename[MAXPATHLEN]; //Always guaranteed to be enough to hold a filename
-    	while (dirnext(dir, filename, &st) == 0) {
-            if (!filesOnly || (st.st_mode & S_IFDIR) == 0) {
-                for (int n = 0; filename[n] != '\0'; n++) filename[n] = tolower(filename[n]);
+        struct dirent *st;
+        char filename[MAXNAMLEN + 1]; //Always guaranteed to be enough to hold a filename
+    	while ((st = readdir(dir)) != NULL) {
+            if (!filesOnly || (st->d_type == DT_REG)) {
+                int n = 0;
+                for (; st->d_name[n] != '\0'; n++) filename[n] = tolower(st->d_name[n]);
+                filename[n] = '\0';
 
-				char* temp = (ext ? strstr(filename, ext) : NULL);
-				if (!ext || (temp && strlen(temp) == extL)) {
-					filesL++;
-				}
+                char* temp = (ext ? strstr(filename, ext) : NULL);
+                if (!ext || (temp && strlen(temp) == extL)) {
+                    filesL++;
+                }
             }
         }
 
@@ -32,25 +35,26 @@ FileList::FileList(const char* folder, const char* ext, bool filesOnly) {
             files[n] = NULL;
         }
 
-        dirreset(dir);
+        rewinddir(dir);
         int t = 0;
-        while (dirnext(dir, filename, &st) == 0) {
-            if (!filesOnly || (st.st_mode & S_IFDIR) == 0) {
-                for (int n = 0; filename[n] != '\0'; n++) filename[n] = tolower(filename[n]);
+    	while ((st = readdir(dir)) != NULL) {
+            if (!filesOnly || (st->d_type == DT_REG)) {
+                int n = 0;
+                for (; st->d_name[n] != '\0'; n++) filename[n] = tolower(st->d_name[n]);
+                filename[n] = '\0';
 
                 char* temp = (ext ? strstr(filename, ext) : NULL);
                 if (!ext || (temp && strlen(temp) == extL)) {
                     int filenameL = strlen(filename);
                     files[t] = new char[filenameL+1];
-                    strncpy(files[t], filename, filenameL);
-                    files[t][filenameL] = '\0';
+                    strcpy(files[t], filename);
                     t++;
                 }
             }
     	}
     	filesL = t;
 
-    	dirclose(dir);
+    	closedir(dir);
     }
     
     Reset();

@@ -23,13 +23,6 @@
 
 #include <nds.h>
 
-// mp3 static defines
-#ifdef SHRINK_AS_LIB
-#define AS_DECODEBUFFER_SIZE (MAX_NCHAN * 1 * MAX_NSAMP)
-#else
-#define AS_DECODEBUFFER_SIZE (MAX_NCHAN * MAX_NGRAN * MAX_NSAMP)
-#endif
-
 // mp3 commands
 typedef enum
 {
@@ -136,7 +129,8 @@ typedef struct
 // MP3 player info
 typedef struct
 {
-	u32 helixbuffer;
+    u32 helixbuffer;
+    u32 MPT_pow_4_3;
     s8  *mixbuffer;
     u32 buffersize;
     s32 rate;

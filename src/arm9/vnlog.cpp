@@ -86,7 +86,8 @@ void LogBuffer::SetScrollPane(TextScrollPane* scrollPane) {
 
 void pngErr(png_structp png_ptr, png_const_charp error_msg) {
 	vnLog(EL_error, COM_GRAPHICS, "libpng_err: %s", error_msg);
-	longjmp(png_ptr->jmpbuf, 1);
+	// TODO: Is this necessary after upgrading from libpng 1.2 to 1.6?
+	//longjmp(png_ptr->jmpbuf, 1);
 }
 void pngWarn(png_structp png_ptr, png_const_charp warning_msg) {
 	//vnLog(EL_warning, COM_GRAPHICS, "libpng_warn: %s", warning_msg);

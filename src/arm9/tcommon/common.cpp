@@ -2,6 +2,8 @@
 
 #include <fat.h>
 #include <ctype.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <sys/dir.h>
 #include <errno.h>
 #include "filehandle.h"
@@ -34,7 +36,7 @@ void tcommonFIFOCallback(u32 value, void* userdata) {
 			break;
 		default:
 			consoleDemoInit();
-			iprintf("Unknown FIFO Command: 0x%x (mode=%d)\n", value, fifoCommandMode);
+			printf("Unknown FIFO Command: 0x%x (mode=%d)\n", value, fifoCommandMode);
 			waitForAnyKey();
 			fifoCommandMode = 0;
 		}
@@ -45,7 +47,7 @@ void tcommonFIFOCallback(u32 value, void* userdata) {
 void toggleBacklight() {
 	//fifoSendValue32(TCOMMON_FIFO_CHANNEL_ARM7, MSG_TOGGLE_BACKLIGHT); //--in libnds 1.3.1 you HAVE to check the return value or the command won't be sent (GCC is probably to blame)
 	if (!fifoSendValue32(TCOMMON_FIFO_CHANNEL_ARM7, MSG_TOGGLE_BACKLIGHT)) {
-		iprintf("Error sending backlight message to ARM7\n");
+		printf("Error sending backlight message to ARM7\n");
 	}
 }
 
@@ -279,8 +281,8 @@ void resetVideo() {
 	REG_BG0CNT = REG_BG1CNT = REG_BG2CNT = REG_BG3CNT = 0;
 	REG_BG0CNT_SUB = REG_BG1CNT_SUB = REG_BG2CNT_SUB = REG_BG3CNT_SUB = 0;
 
-    vramSetMainBanks(VRAM_A_LCD, VRAM_B_LCD, VRAM_C_LCD, VRAM_D_LCD);
-	vramSetBankE(VRAM_E_LCD);
+    vramSetPrimaryBanks(VRAM_A_LCD, VRAM_B_LCD, VRAM_C_LCD, VRAM_D_LCD);
+    vramSetBankE(VRAM_E_LCD);
     vramSetBankF(VRAM_F_LCD);
     vramSetBankG(VRAM_G_LCD);
     vramSetBankH(VRAM_H_LCD);
@@ -375,7 +377,7 @@ void versionIntToString(char* out, u32 version) {
 }
 
 bool mkdirs(const char* constPath) {
-	char path[MAXPATHLEN];
+	char path[PATH_MAX];
 	strcpy(path, constPath);
 
 	char* slash = path;
@@ -404,7 +406,7 @@ bool fexists(const char* filename) {
 }
 
 void setupCapture(int bank) {
-    REG_DISPCAPCNT = DCAP_ENABLE | DCAP_MODE(0) | DCAP_DST(0) | DCAP_SRC(0) | DCAP_SIZE(3) |
+    REG_DISPCAPCNT = DCAP_ENABLE | DCAP_MODE(0) | DCAP_SRC_ADDR(0) | DCAP_SRC(0) | DCAP_SIZE(3) |
         DCAP_OFFSET(0) | DCAP_BANK(bank) | DCAP_B(15) | DCAP_A(0);
 }
 void waitForCapture() {

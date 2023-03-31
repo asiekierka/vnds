@@ -9,7 +9,7 @@ class FileHandle {
 	private:
 
     public:
-        char filename[MAXPATHLEN];
+        char filename[PATH_MAX];
         u32 startOffset;
         u32 currentOffset;
         u32 length;

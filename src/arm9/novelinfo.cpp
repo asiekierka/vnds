@@ -29,7 +29,8 @@ u8 NovelInfo::GetFontSize() {
 const u16* NovelInfo::GetIcon() {
 	if (!iconLoaded) {
 		char path[MAXPATHLEN];
-		sprintf(path, "%s/icon", GetPath());
+		snprintf(path, MAXPATHLEN - 1, "%s/icon", GetPath());
+		path[MAXPATHLEN - 1] = '\0';
 		loadImage(path, icon, NULL, 32, 32);
 		iconLoaded = true;
 	}
@@ -38,7 +39,8 @@ const u16* NovelInfo::GetIcon() {
 const u16* NovelInfo::GetThumbnail() {
 	if (!thumbnailLoaded) {
 		char path[MAXPATHLEN];
-		sprintf(path, "%s/thumbnail", GetPath());
+		snprintf(path, MAXPATHLEN - 1, "%s/thumbnail", GetPath());
+		path[MAXPATHLEN - 1] = '\0';
 		loadImage(path, thumbnail, NULL, 100, 75);
 		thumbnailLoaded = true;
 	}

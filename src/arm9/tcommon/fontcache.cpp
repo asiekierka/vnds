@@ -29,7 +29,7 @@ static FT_Error simpleFaceRequester(FTC_FaceID face_id, FT_Library library,
 	}
 
 	if (error) {
-		iprintf("Font face req. error: %08x\n", error);
+		printf("Font face req. error: %08x\n", error);
 		waitForAnyKey();
 	}
     return error;
@@ -57,7 +57,7 @@ FontCache::FontCache(const char* defaultFontPath, u32 cacheSize) {
     if (error) {
     	scanKeys();
     	consoleDemoInit();
-    	iprintf("Font init failed: %08x\n", error);
+    	printf("Font init failed: %08x\n", error);
     	waitForAnyKey();
     }
 
