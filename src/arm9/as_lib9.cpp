@@ -99,7 +99,7 @@ void AS_Init(u8 mode, u32 mp3BufferSize) {
 
     // use mp3
     if (mode & AS_MODE_MP3) {
-        ipcSound->mp3.mixbuffer = (s8*)((u32)memalign(4, AS_AUDIOBUFFER_SIZE * 2) | 0x400000);
+        ipcSound->mp3.mixbuffer = (s8*)memUncached(memalign(4, AS_AUDIOBUFFER_SIZE * 2));
         ipcSound->mp3.buffersize = AS_AUDIOBUFFER_SIZE / 2;
         ipcSound->mp3.channelL = 0;
         ipcSound->mp3.prevtimer = 0;

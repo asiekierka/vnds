@@ -45,10 +45,7 @@ void tcommonFIFOCallback(u32 value, void* userdata) {
 }
 
 void toggleBacklight() {
-	//fifoSendValue32(TCOMMON_FIFO_CHANNEL_ARM7, MSG_TOGGLE_BACKLIGHT); //--in libnds 1.3.1 you HAVE to check the return value or the command won't be sent (GCC is probably to blame)
-	if (!fifoSendValue32(TCOMMON_FIFO_CHANNEL_ARM7, MSG_TOGGLE_BACKLIGHT)) {
-		printf("Error sending backlight message to ARM7\n");
-	}
+	fifoSendValue32(TCOMMON_FIFO_CHANNEL_ARM7, MSG_TOGGLE_BACKLIGHT);
 }
 
 u8 chartohex(char c) {
