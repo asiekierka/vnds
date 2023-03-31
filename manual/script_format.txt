@@ -1,0 +1,123 @@
+VNDS .scr file format:
+
+for any clarification on the usage of these, look at a .scr from another VN
+
+bgload:
+    usage: bgload file [fadetime]
+    looks in background/ for the image and draws it as the background
+    control length of fade in frames with fadetime (default 16)
+    
+setimg:
+    usage: setimg file x y
+    looks in foreground/ for the image and draws it at the point (x,y)
+
+sound:
+    usage: sound file times
+    looks in sound/ for the file, loads it into memory(don`t do this with 
+        anything over a meg in size) and plays it X times. -1 for infinite
+        looping.
+    if file is ~, it stops any currently playing sound.
+    
+music:
+    usage: music file
+    looks in sound/ for the file, 
+    
+    music is expected to be in mp3 format
+    if file is ~, it stops the music.
+
+text:
+    usage: text string
+    displays text to the screen.
+    
+    Prepending string with @ makes it not require clicking to advance
+    if string is ~, it`ll make a blank line
+    if string is !, it`ll make a blank line and require clicking to advance
+    
+choice:
+    usage: choice option1|option2|etc...
+    displays choices on the screen
+    
+    when a choice is clicked, selected is set to the value of what was
+        selected, starting at 1.
+    use if selected == 1, etc to go off what was selected.
+
+setvar/gsetvar:
+    usage: setvar modifier value
+    sets a variable
+    
+    modifier: =, +. -
+    setvar puts values into local save memory, to be kept in normal save files
+        for things like character flags and such
+    gsetvar sets variables in global.sav
+        for things like cleared path flags
+    prefix a variable with $ to use it in other commands: `text var is $var`
+        {$var} can be used if needed to separate the variable from other text
+        
+if/fi:
+    usage: 
+        if x == 1
+            commands
+        fi
+    conditional jump
+    
+    if true, it keeps reading. if false, it skips till it encounters a fi
+    Note: left operand must be a variable, right may be either
+        This is due to either redoing every script to put $ in front of the
+            variables, or just making left not default to string if the
+            variable doesnt exist.
+    
+jump:
+    usage: jump file.scr [label]
+    looks in script/ for the .scr and starts reading off that.
+    if label is specified, jumps to that label in the script
+
+delay:
+    usage: delay X
+    X being number of frames to hold, DS runs at 60 frames per second.
+
+random:
+    usage: random var low high
+    set var to a number between low and high (inclusive)
+
+label/goto:
+    usage:
+        label name
+        goto name
+    
+    a goto command will search the current script for a label with the same 
+        name and start the script from that part
+
+cleartext:
+    usage: cleartext [type]
+    clears text from the screen.
+ 
+    if no type is given, it`ll make enough blank lines to fill the display
+    if type is !, it`ll completely clear the text buffer (including history)
+
+Notes:
+    titlescreen:
+        icon: 32x32 .png
+        thumbnail 100x75 .png
+        
+    To place a variable in a command, prefix the variable name with $ and it
+        will directly replace it. Strings only
+
+Conversion:
+    Images:
+        Sprites should be in png format and backgrounds as jpg or png. Alpha 
+            transparency is supported for sprites. 
+        To avoid color banding, decrease the color depth of the images to 
+            5bits/channel and use dithering (png doesn't support 5bits/channel,
+			so store them in 8bits/channel instead).
+        For background images you should also make sure that they're 256x192 
+            in size.
+
+    Sound:
+        Sound effects should be encoded in aac.
+
+        `ffmpeg -i infile -acodec libfaac outfile`
+        
+	.zip:
+        For increased file access performance, put the files in an uncompressed
+        .zip file. each folder should get its own archive: background.zip, 
+        foreground.zip, script.zip, sound.zip.
