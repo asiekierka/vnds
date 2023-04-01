@@ -31,9 +31,6 @@
 //---- ASlib options ------------------------------------------
 // uncomment the defines below to activate the desired option
 
-// use the EFSlib to stream mp3 files instead of libfat
-//#define AS_USE_EFS
-
 // use expanded stereo panning separation in surround mode, but decrease volume
 //#define AS_USE_EXPANDED_SURROUND_STEREO
 

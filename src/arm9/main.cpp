@@ -11,10 +11,6 @@
 #include "tcommon/text.h"
 #include "tcommon/xml_parser.h"
 
-#ifdef EFS
-#include "efs_lib.h"
-#endif
-
 void epicFail() {
 	lcdMainOnBottom();
 	consoleDemoInit();
@@ -84,13 +80,8 @@ void checkInstall() {
 }
 
 int main(int argc, char** argv) {
-	powerOn(POWER_ALL);
+    powerOn(POWER_ALL);
     defaultExceptionHandler();
-
-    for (int n = 0; n < 20; n++) {
-    	//Wait for ARM7 init
-    	swiWaitForVBlank();
-    }
 
     if (!fifoSetValue32Handler(TCOMMON_FIFO_CHANNEL_ARM9, &tcommonFIFOCallback, NULL)) {
     	return 1; //Fatal Error
@@ -98,14 +89,8 @@ int main(int argc, char** argv) {
 
     //Init filesystem
     if (!fatInitDefault()) {
-    	#ifdef EFS
-			if (!EFS_Init(EFS_AND_FAT|EFS_DEFAULT_DEVICE, NULL)) {
-		#endif
-		        libfatFail();
-		        return 1;
-		#ifdef EFS
-			}
-		#endif
+        libfatFail();
+        return 1;
     } else {
         chdir("/vnds");
     }
