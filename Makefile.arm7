@@ -8,8 +8,8 @@ BLOCKSDSEXT	?= /opt/blocksds/external
 # Source code paths
 # -----------------
 
-SOURCEDIRS	:= src/arm7 src/common
-INCLUDEDIRS	:= src/arm7 src/common
+SOURCEDIRS	:= src/arm7 src/common vendor/wavpack
+INCLUDEDIRS	:= src/arm7 src/common vendor/wavpack
 BINDIRS		:=
 
 # Defines passed to all files
@@ -86,21 +86,21 @@ INCLUDEFLAGS	:= $(foreach path,$(INCLUDEDIRS),-I$(path)) \
 LIBDIRSFLAGS	:= $(foreach path,$(LIBDIRS),-L$(path)/lib)
 
 ASFLAGS		+= -x assembler-with-cpp $(DEFINES) $(ARCH) \
-		   -mthumb -mthumb-interwork $(INCLUDEFLAGS) \
+		   -marm -mthumb-interwork $(INCLUDEFLAGS) \
 		   -ffunction-sections -fdata-sections
 
 CFLAGS		+= -std=gnu11 $(WARNFLAGS) $(DEFINES) $(ARCH) \
-		   -mthumb -mthumb-interwork $(INCLUDEFLAGS) -Os \
+		   -marm -mthumb-interwork $(INCLUDEFLAGS) -O2 \
 		   -ffunction-sections -fdata-sections \
 		   -fomit-frame-pointer
 
 CXXFLAGS	+= -std=gnu++14 $(WARNFLAGS) $(DEFINES) $(ARCH) \
-		   -mthumb -mthumb-interwork $(INCLUDEFLAGS) -Os \
+		   -marm -mthumb-interwork $(INCLUDEFLAGS) -O2 \
 		   -ffunction-sections -fdata-sections \
 		   -fno-exceptions -fno-rtti \
 		   -fomit-frame-pointer
 
-LDFLAGS		:= -mthumb -mthumb-interwork $(LIBDIRSFLAGS) \
+LDFLAGS		:= -marm -mthumb-interwork $(LIBDIRSFLAGS) \
 		   -Wl,-Map,$(MAP) -Wl,--gc-sections -nostdlib \
 		   -T$(BLOCKSDS)/sys/crts/ds_arm7.ld \
 		   -Wl,--no-warn-rwx-segments \

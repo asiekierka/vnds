@@ -129,8 +129,6 @@ typedef struct
 // MP3 player info
 typedef struct
 {
-    u32 helixbuffer;
-    u32 MPT_pow_4_3;
     s8  *mixbuffer;
     u32 buffersize;
     s32 rate;

@@ -38,16 +38,12 @@ s32 as_default_rate;
 u8 as_default_delay;
 
 // initialize the ASLib
-void AS_Init(u8 mode, u32 mp3BufferSize) {
+void AS_Init(u8 mode) {
     //Set up memory in a non-cache area
     u32 mem = (u32)memUncached(memalign(32, sizeof(IPC_SoundSystem)));
     ipcSound = (IPC_SoundSystem*)mem;
 
     memset(ipcSound, 0, sizeof(IPC_SoundSystem));
-    if (mp3BufferSize > 0) {
-        //Set up memory in a non-cache area
-        // ipcSound->mp3.helixbuffer = (u32)memUncached(memalign(32, mp3BufferSize));
-    }
 
     int i, nb_chan = 16;
 

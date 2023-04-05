@@ -39,7 +39,21 @@ void SoundEngine::Update() {
 	// aacPlayer->Update();
     AS_SoundVBL();
 }
-void SoundEngine::SetMusic(const char* path) {
+
+static void change_extension(char *path, const char *new_ext) {
+	char *end = path + strlen(path);
+	while (path < end && end[0] != '.') end--;
+	if (path < end && end[0] == '.') {
+		strcpy(end, new_ext);
+	}
+}
+
+void SoundEngine::SetMusic(const char* in_path) {
+	char path[PATH_MAX+1];
+	strncpy(path, in_path, PATH_MAX);
+	path[PATH_MAX] = 0;
+	change_extension(path, ".wv");
+
 	if (strcmp(path, "sound/~") == 0) {
 		if (strlen(musicPath) > 0) {
 			vnLog(EL_verbose, COM_SOUND, "Stopping music: %s", musicPath);
@@ -72,10 +86,14 @@ void SoundEngine::SetMusic(const char* path) {
 void SoundEngine::StopMusic() {
 	SetMusic("sound/~");
 }
-void SoundEngine::PlaySound(const char* path, int times) {
+void SoundEngine::PlaySound(const char* in_path, int times) {
 	if (times == 0) {
 		times = 1;
 	}
+
+	char path[PATH_MAX+1];
+	strncpy(path, in_path, PATH_MAX);
+	path[PATH_MAX] = 0;
 
 	if (strcmp(path, "sound/~") == 0) {
 		if (soundType == ST_adpcm) {
@@ -100,9 +118,10 @@ void SoundEngine::PlaySound(const char* path, int times) {
 		strcpy(soundPath, path);
 
 		char* periodChar = strrchr(soundPath, '.');
-	    if (periodChar && (tolower(periodChar[1])=='a' || tolower(periodChar[1])=='m')) {
-	    	//.aac .mp4
+	    if (periodChar && (!strcasecmp(periodChar+1, "wv") || !strcasecmp(periodChar+1, "aac") || !strcasecmp(periodChar+1, "mp4") || !strcasecmp(periodChar+1, "mp3"))) {
+	    	// wavpack
 	    	soundType = ST_aac;
+		change_extension(path, ".wv");
 
 			// TODO: AAC
 			/* if (aacPlayer->PlaySound(soundArchive, soundPath, preferences->GetSoundVolume())) {

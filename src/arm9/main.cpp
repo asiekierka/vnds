@@ -108,7 +108,7 @@ int main(int argc, char** argv) {
     //InitAACPlayer();
 
     //Init ASLib
-	AS_Init(AS_MODE_MP3, 24*1024);
+    AS_Init(AS_MODE_MP3);
     AS_SetDefaultSettings(AS_ADPCM, 22050, 0);
 
     //Create log

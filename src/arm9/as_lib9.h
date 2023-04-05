@@ -37,7 +37,7 @@
 //-----------------------------------------------------------
 
 // buffer sizes, should fit any usage (feel free to adjust if needed)
-#define AS_AUDIOBUFFER_SIZE 24 * 2 * 1152
+#define AS_AUDIOBUFFER_SIZE 24 * 2 * 1024
 #define AS_FILEBUFFER_SIZE  8 * 1024   // file buffer size
 
 // file access functions
@@ -167,8 +167,6 @@ typedef struct
 /// MP3 player info
 typedef struct
 {
-	u32 helixbuffer;
-    u32 MPT_pow_4_3;
     s8  *mixbuffer;
     u32 buffersize;
     s32 rate;
@@ -205,7 +203,7 @@ extern IPC_SoundSystem* ipcSound;
 #define AS_SoundQuickPlay(name)     AS_SoundDefaultPlay((u8*)name, (u32)name##_size, 127, 64, false, 0)
 
 /// initialize the ASLib
-void AS_Init(u8 mode, u32 mp3BufferSize);
+void AS_Init(u8 mode);
 
 /// reserve a particular DS channel (so it won't be used for the sound pool)
 void AS_ReserveChannel(u8 channel);
