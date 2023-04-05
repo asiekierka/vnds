@@ -335,7 +335,7 @@ void AS_RegenStreamCallback(s16 *stream, u32 numsamples)
                     bytesLeft = ipcSound->mp3.mp3filesize;
                 } else {
                     AS_MP3Stop();
-                    ipcSound->mp3.state = MP3ST_OUT_OF_DATA;
+                    ipcSound->mp3.state = MP3ST_DECODE_ERROR;
                 }
                 return;
             }

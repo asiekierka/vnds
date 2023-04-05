@@ -1,3 +1,15 @@
+* 1.4.10-pre 05/04/23
+
+  * Full DSi mode support.
+  * Updated dependencies:
+    * FreeType: 2.3.5 -> 2.13.0
+    * libpng: 1.2.8 -> 1.6.39
+    * zlib: 1.2.3 -> 1.2.13
+  * Removed non-GPL-compliant MP3/AAC decoders. Instead, the recommended audio format is the limited-hardware-friendly [WavPack](https://www.wavpack.com/).
+    * .mp3, .aac, etc. file extensions will automatically be replaced by .wv, so editing scripts is not necessary.
+    * This might allow for higher-quality music playback than previously available? I haven't benchmarked it too much, and there is room for further optimization.
+  * Minor cleanup/optimizations.
+
 * 1.4.9 13/01/10
 	anoNL:
 		* png error handling (ignore spurious warnings/crash on invalid png)
