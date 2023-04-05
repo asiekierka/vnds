@@ -19,7 +19,9 @@
 #include <string.h>
 
 #define LOSSY_MUTE
-#define CPU_ARM
+#ifdef WAVPACK_VNDS
+# define CPU_ARM
+#endif
 
 ///////////////////////////// executable code ////////////////////////////////
 
@@ -58,13 +60,22 @@ int unpack_init (WavpackContext *wpc)
         return FALSE;
     }
 
+#ifdef WAVPACK_VNDS
+    if (wps->wphdr.flags & FLOAT_DATA) {
+        strcpy (wpc->error_message, "format unsupported!");
+        return FALSE;
+    }
+#endif
+
     if (wps->wphdr.block_samples) {
         if ((wps->wphdr.flags & INT32_DATA) && wps->int32_sent_bits)
             wpc->lossy_blocks = TRUE;
 
+#ifndef WAVPACK_VNDS
         if ((wps->wphdr.flags & FLOAT_DATA) &&
             wps->float_flags & (FLOAT_EXCEPTIONS | FLOAT_ZEROS_SENT | FLOAT_SHIFT_SENT | FLOAT_SHIFT_SAME))
                 wpc->lossy_blocks = TRUE;
+#endif
     }
 
     return TRUE;
@@ -78,10 +89,10 @@ int init_wv_bitstream (WavpackContext *wpc, WavpackMetadata *wpmd)
     WavpackStream *wps = &wpc->stream;
 
     if (wpmd->data)
-        bs_open_read (&wps->wvbits, wpmd->data, (unsigned char *) wpmd->data + wpmd->byte_length, NULL, 0);
+        bs_open_read (&wps->wvbits, wpmd->data, (unsigned char *) wpmd->data + wpmd->byte_length, NULL, NULL, 0);
     else if (wpmd->byte_length)
         bs_open_read (&wps->wvbits, wpc->read_buffer, wpc->read_buffer + sizeof (wpc->read_buffer),
-            wpc->infile, wpmd->byte_length + (wpmd->byte_length & 1));
+            wpc->infile, wpc->infile_userdata, wpmd->byte_length + (wpmd->byte_length & 1));
 
     return TRUE;
 }
@@ -694,10 +705,12 @@ static void fixup_samples (WavpackStream *wps, int32_t *buffer, uint32_t sample_
     uint32_t flags = wps->wphdr.flags;
     int shift = (flags & SHIFT_MASK) >> SHIFT_LSB;
 
+#ifndef WAVPACK_VNDS
     if (flags & FLOAT_DATA) {
         float_values (wps, buffer, (flags & MONO_FLAG) ? sample_count : sample_count * 2);
         return;
     }
+#endif
 
     if (flags & INT32_DATA) {
         uint32_t count = (flags & MONO_FLAG) ? sample_count : sample_count * 2;

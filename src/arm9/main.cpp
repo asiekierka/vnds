@@ -4,6 +4,7 @@
 #include <sys/dir.h>
 
 #include "common.h"
+#include "aac.h"
 #include "as_lib9.h"
 #include "vnds_types.h"
 #include "vnds.h"
@@ -104,8 +105,7 @@ int main(int argc, char** argv) {
     //Timer0 + Timer1 are used by as_lib
     //Timer2 is for AAC
     //Timer3 is for Wifi
-    // TODO: AAC
-    //InitAACPlayer();
+    InitAACPlayer();
 
     //Init ASLib
     AS_Init(AS_MODE_MP3);

@@ -40,7 +40,7 @@ u8 as_default_delay;
 // initialize the ASLib
 void AS_Init(u8 mode) {
     //Set up memory in a non-cache area
-    u32 mem = (u32)memUncached(memalign(32, sizeof(IPC_SoundSystem)));
+    u32 mem = (u32)memalign(32, sizeof(IPC_SoundSystem));
     ipcSound = (IPC_SoundSystem*)mem;
 
     memset(ipcSound, 0, sizeof(IPC_SoundSystem));
@@ -95,7 +95,7 @@ void AS_Init(u8 mode) {
 
     // use mp3
     if (mode & AS_MODE_MP3) {
-        ipcSound->mp3.mixbuffer = (s8*)memUncached(memalign(4, AS_AUDIOBUFFER_SIZE * 2));
+        ipcSound->mp3.mixbuffer = (s8*)memalign(4, AS_AUDIOBUFFER_SIZE * 2);
         ipcSound->mp3.buffersize = AS_AUDIOBUFFER_SIZE / 2;
         ipcSound->mp3.channelL = 0;
         ipcSound->mp3.prevtimer = 0;

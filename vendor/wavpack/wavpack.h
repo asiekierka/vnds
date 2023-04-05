@@ -7,10 +7,16 @@
 ////////////////////////////////////////////////////////////////////////////
 
 // wavpack.h
+#pragma once
 
 #include <sys/types.h>
 
 // This header file contains all the definitions required by WavPack.
+#define WAVPACK_VNDS
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #ifdef __BORLANDC__
 typedef unsigned long uint32_t;
@@ -172,7 +178,7 @@ typedef struct {
 // pointers to hold a complete allocated block of WavPack data, although it's
 // possible to decode WavPack blocks without buffering an entire block.
 
-typedef int32_t (*read_stream)(void *, int32_t);
+typedef int32_t (*read_stream)(void *, void *, int32_t);
 
 typedef struct bs {
     uchar *buf, *end, *ptr;
@@ -180,6 +186,7 @@ typedef struct bs {
     uint32_t file_bytes, sr;
     int error, bc;
     read_stream file;
+    void *file_userdata;
 } Bitstream;
 
 #define MAX_NTERMS 16
@@ -240,6 +247,8 @@ typedef struct {
     char error_message [80];
 
     read_stream infile;
+    void *infile_userdata;
+
     uint32_t total_samples, crc_errors, first_flags;
     int open_flags, norm_offset, reduced_channels, lossy_blocks;
 
@@ -251,7 +260,7 @@ typedef struct {
 
 // bits.c
 
-void bs_open_read (Bitstream *bs, uchar *buffer_start, uchar *buffer_end, read_stream file, uint32_t file_bytes);
+void bs_open_read (Bitstream *bs, uchar *buffer_start, uchar *buffer_end, read_stream file, void *userdata, uint32_t file_bytes);
 
 #define bs_is_open(bs) ((bs)->ptr != NULL)
 
@@ -360,7 +369,7 @@ void float_values (WavpackStream *wps, int32_t *values, int32_t num_values);
 
 // wputils.c
 
-WavpackContext *WavpackOpenFileInput (read_stream infile, char *error);
+WavpackContext *WavpackOpenFileInput (read_stream infile, void *userdata, char *error);
 
 int WavpackGetMode (WavpackContext *wpc);
 
@@ -382,3 +391,7 @@ int WavpackGetBitsPerSample (WavpackContext *wpc);
 int WavpackGetBytesPerSample (WavpackContext *wpc);
 int WavpackGetNumChannels (WavpackContext *wpc);
 int WavpackGetReducedChannels (WavpackContext *wpc);
+
+#ifdef __cplusplus
+}
+#endif

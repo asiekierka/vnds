@@ -16,7 +16,7 @@ int read_metadata_buff (WavpackContext *wpc, WavpackMetadata *wpmd)
 {
     uchar tchar;
 
-    if (!wpc->infile (&wpmd->id, 1) || !wpc->infile (&tchar, 1))
+    if (!wpc->infile (wpc->infile_userdata, &wpmd->id, 1) || !wpc->infile (wpc->infile_userdata, &tchar, 1))
         return FALSE;
 
     wpmd->byte_length = tchar << 1;
@@ -24,12 +24,12 @@ int read_metadata_buff (WavpackContext *wpc, WavpackMetadata *wpmd)
     if (wpmd->id & ID_LARGE) {
         wpmd->id &= ~ID_LARGE;
 
-        if (!wpc->infile (&tchar, 1))
+        if (!wpc->infile (wpc->infile_userdata, &tchar, 1))
             return FALSE;
 
         wpmd->byte_length += (int32_t) tchar << 9; 
 
-        if (!wpc->infile (&tchar, 1))
+        if (!wpc->infile (wpc->infile_userdata, &tchar, 1))
             return FALSE;
 
         wpmd->byte_length += (int32_t) tchar << 17;
@@ -43,7 +43,7 @@ int read_metadata_buff (WavpackContext *wpc, WavpackMetadata *wpmd)
     if (wpmd->byte_length && wpmd->byte_length <= sizeof (wpc->read_buffer)) {
         uint32_t bytes_to_read = wpmd->byte_length + (wpmd->byte_length & 1);
 
-        if (wpc->infile (wpc->read_buffer, bytes_to_read) != (int32_t) bytes_to_read) {
+        if (wpc->infile (wpc->infile_userdata, wpc->read_buffer, bytes_to_read) != (int32_t) bytes_to_read) {
             wpmd->data = NULL;
             return FALSE;
         }

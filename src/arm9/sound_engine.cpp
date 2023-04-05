@@ -1,6 +1,7 @@
 #include "sound_engine.h"
 
 #include <sys/stat.h>
+#include "aac.h"
 #include "as_lib9.h"
 #include "tcommon/filehandle.h"
 
@@ -35,8 +36,7 @@ void SoundEngine::Reset() {
 	soundBufferL = 0;
 }
 void SoundEngine::Update() {
-	// TODO: AAC
-	// aacPlayer->Update();
+    aacPlayer->Update();
     AS_SoundVBL();
 }
 
@@ -106,8 +106,7 @@ void SoundEngine::PlaySound(const char* in_path, int times) {
 				}
 			}
 		} else if (soundType == ST_aac) {
-			// TODO: AAC
-			// aacPlayer->StopSound();
+			aacPlayer->StopSound();
 		}
 	} else {
 		if (mute) {
@@ -115,23 +114,22 @@ void SoundEngine::PlaySound(const char* in_path, int times) {
 			return;
 		}
 
-		strcpy(soundPath, path);
-
-		char* periodChar = strrchr(soundPath, '.');
+		char* periodChar = strrchr(path, '.');
 	    if (periodChar && (!strcasecmp(periodChar+1, "wv") || !strcasecmp(periodChar+1, "aac") || !strcasecmp(periodChar+1, "mp4") || !strcasecmp(periodChar+1, "mp3"))) {
 	    	// wavpack
 	    	soundType = ST_aac;
 		change_extension(path, ".wv");
+		strcpy(soundPath, path);
 
-			// TODO: AAC
-			/* if (aacPlayer->PlaySound(soundArchive, soundPath, preferences->GetSoundVolume())) {
+			if (aacPlayer->PlaySound(soundArchive, soundPath, preferences->GetSoundVolume())) {
 				vnLog(EL_verbose, COM_SOUND, "Playing sound: %s %d", soundPath, times);
-			} else */ {
+			} else {
 				vnLog(EL_missing, COM_SOUND, "Can't find sound file: %s", soundPath);
 			}
 	    } else {
 	    	//.*
 	    	soundType = ST_adpcm;
+		strcpy(soundPath, path);
 
 	    	FileHandle* fh = fhOpen(soundArchive, soundPath);
 			if (fh) {
@@ -165,8 +163,7 @@ void SoundEngine::ReplaySound() {
 			swiWaitForVBlank();
 		}
 	} else if (soundType == ST_aac) {
-		// TODO: AAC
-		// aacPlayer->PlaySound(soundArchive, soundPath);
+		aacPlayer->PlaySound(soundArchive, soundPath);
 	}
 }
 

@@ -8,8 +8,8 @@ BLOCKSDSEXT	?= /opt/blocksds/external
 # Source code paths
 # -----------------
 
-SOURCEDIRS	:= src/arm9 src/common
-INCLUDEDIRS	:= src/arm9 src/common \
+SOURCEDIRS	:= src/arm9 src/common vendor/wavpack
+INCLUDEDIRS	:= src/arm9 src/common vendor/wavpack \
 		/opt/wonderful/toolchain/gcc-arm-none-eabi/arm-none-eabi/include/freetype2
 GFXDIRS		:=
 BINDIRS		:=

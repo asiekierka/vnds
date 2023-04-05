@@ -41,7 +41,7 @@ void AS_StereoDesinterleave(s16 *input, s16 *outputL, s16 *outputR, u32 samples)
 IPC_SoundSystem* ipcSound = 0;
 
 // variables for the wavpack player
-WavpackContext *wpc;
+extern WavpackContext wavpackContext;
 char wpc_error[80];
 u8 *readPtr;
 int bytesLeft;
@@ -53,7 +53,7 @@ int nAudioBufStart;
 int nAudioBuf;
 u8 nChans;
 
-s32 wv_read_callback(void *in_buffer, s32 num_bytes) {
+s32 wv_read_callback(void *userdata, void *in_buffer, s32 num_bytes) {
 	u8 *buffer = (u8*) in_buffer;
 	s32 to_read = num_bytes;
 	if (bytesLeft < num_bytes) to_read = bytesLeft;
@@ -195,10 +195,10 @@ void AS_MP3Engine() {
             nAudioBufStart = 0;
 
             // initialize MP3 engine
-            wpc = WavpackOpenFileInput(wv_read_callback, wpc_error);
+            WavpackOpenFileInput(wv_read_callback, NULL, wpc_error);
             // gather information about the format
-            nChans = WavpackGetReducedChannels(wpc);
-            mp3->rate = WavpackGetSampleRate(wpc);
+            nChans = WavpackGetReducedChannels(&wavpackContext);
+            mp3->rate = WavpackGetSampleRate(&wavpackContext);
 
             // fill the half of the buffer
             AS_RegenStreamCallback((s16*)mp3->mixbuffer, mp3->buffersize >> 1);
@@ -328,7 +328,7 @@ void AS_RegenStreamCallback(s16 *stream, u32 numsamples)
 
         // decode a mp3 frame to outBuf
         do {
-            int outputSamples = WavpackUnpackSamples(wpc, audioBuf, BUFFER_SIZE / nChans);
+            int outputSamples = WavpackUnpackSamples(&wavpackContext, audioBuf, BUFFER_SIZE / nChans);
             if (!outputSamples) {
                 if (ipcSound->mp3.loop && !ipcSound->mp3.stream) {
                     readPtr = ipcSound->mp3.mp3buffer;
@@ -391,8 +391,6 @@ void AS_MP3Stop()
     ipcSound->mp3.rate = 0;
     ipcSound->mp3.cmd = MP3CMD_NONE;
     ipcSound->mp3.state = MP3ST_STOPPED;
-
-    wpc = NULL;
 }
 
 void AS_InitMP3() {

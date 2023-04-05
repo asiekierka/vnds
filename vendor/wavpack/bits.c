@@ -25,7 +25,7 @@
 
 static void bs_read (Bitstream *bs);
 
-void bs_open_read (Bitstream *bs, uchar *buffer_start, uchar *buffer_end, read_stream file, uint32_t file_bytes)
+void bs_open_read (Bitstream *bs, uchar *buffer_start, uchar *buffer_end, read_stream file, void *userdata, uint32_t file_bytes)
 {
     CLEAR (*bs);
     bs->buf = buffer_start;
@@ -35,6 +35,7 @@ void bs_open_read (Bitstream *bs, uchar *buffer_start, uchar *buffer_end, read_s
         bs->ptr = bs->end - 1;
         bs->file_bytes = file_bytes;
         bs->file = file;
+        bs->file_userdata = userdata;
     }
     else
         bs->ptr = bs->buf - 1;
@@ -55,7 +56,7 @@ static void bs_read (Bitstream *bs)
         if (bytes_to_read > bs->file_bytes)
             bytes_to_read = bs->file_bytes;
 
-        bytes_read = bs->file (bs->buf, bytes_to_read);
+        bytes_read = bs->file (bs->file_userdata, bs->buf, bytes_to_read);
 
         if (bytes_read) {
             bs->end = bs->buf + bytes_read;
