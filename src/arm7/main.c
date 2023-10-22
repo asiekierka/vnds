@@ -9,11 +9,8 @@
 u8 isOldDS = 0;
 u8 backlight = 1;
 
-void vCountHandler() {
-	inputGetAndSend();
-}
-
 void vBlankHandler() {
+	inputGetAndSend();
    	AS_SoundVBL(); // Update AS_Lib
 
 #ifdef SUPPORT_WIFI
@@ -60,40 +57,27 @@ static void backlightWriteLevel(u8 value) {
 }
 
 int main(int argc, char** argv) {
-        // clear sound registers
-        dmaFillWords(0, (void*)0x04000400, 0x100);
-
-        REG_SOUNDCNT |= SOUND_ENABLE;
-        writePowerManagement(PM_CONTROL_REG, ( readPowerManagement(PM_CONTROL_REG) & ~PM_SOUND_MUTE ) | PM_SOUND_AMP );
-        powerOn(POWER_SOUND);
+        enableSound();
 
         readUserSettings();
         ledBlink(0);
 
-        irqInit();
-        // Start the RTC tracking IRQ
-        initClockIRQ();
-        fifoInit();
         touchInit();
-
-	SetYtrigger(80);
+        irqInit();
+        fifoInit();
 
 #ifdef SUPPORT_WIFI
 	installWifiFIFO();
 #endif
-
 	installSoundFIFO();
-	//mmInstall(FIFO_MAXMOD);
-
 	installSystemFIFO();
 
-	irqSet(IRQ_VCOUNT, vCountHandler);
 	irqSet(IRQ_VBLANK, vBlankHandler);
+	irqEnable(IRQ_VBLANK);
 
-    //Setup IRQ
-	irqEnable(IRQ_VBLANK | IRQ_VCOUNT | IRQ_NETWORK);
+        initClockIRQTimer(3);
 
-	//Send backlight state
+        // Send backlight state
 	isOldDS = !(readPowerManagement(4) & BIT(6));
 	fifoSendValue32(TCOMMON_FIFO_CHANNEL_ARM9, MSG_TOGGLE_BACKLIGHT);
 	fifoSendValue32(TCOMMON_FIFO_CHANNEL_ARM9, backlightReadLevel());
