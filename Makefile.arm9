@@ -82,7 +82,7 @@ SOURCES_CPP	:= $(shell find -L $(SOURCEDIRS) -name "*.cpp")
 # Compiler and linker flags
 # -------------------------
 
-DEFINES		+= -D__NDS__ -DARM9 -DVERSION_STRING="\"vnds 1.4.10-pre\""
+DEFINES		+= -D__NDS__ -DARM9 -DVERSION_STRING="\"vnds 1.4.11-pre\""
 
 ARCH		:= -march=armv5te -mtune=arm946e-s
 
