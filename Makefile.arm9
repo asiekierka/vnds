@@ -26,7 +26,7 @@ DEFINES		:=
 # Libraries
 # ---------
 
-LIBS		:= -lmm9 -ldswifi9 -lnds9 -lfreetype -lpng -lz -lc -lstdc++
+LIBS		:= -lmm9 -ldswifi9 -lnds9 -lfreetype -lpng -lz
 LIBDIRS		:= $(BLOCKSDS)/libs/maxmod \
 		   $(BLOCKSDS)/libs/dswifi \
 		   $(BLOCKSDS)/libs/libnds
@@ -47,6 +47,7 @@ SOUNDBANKDIR	:= $(BUILDDIR)/maxmod
 PREFIX		:= $(ARM_NONE_EABI_PATH)arm-none-eabi-
 CC		:= $(PREFIX)gcc
 CXX		:= $(PREFIX)g++
+LD		:= $(PREFIX)gcc
 OBJDUMP		:= $(PREFIX)objdump
 MKDIR		:= mkdir
 RM		:= rm -rf
@@ -85,16 +86,18 @@ SOURCES_CPP	:= $(shell find -L $(SOURCEDIRS) -name "*.cpp")
 # Compiler and linker flags
 # -------------------------
 
-DEFINES		+= -D__NDS__ -DARM9 -DVERSION_STRING="\"vnds 1.4.11-pre\""
+DEFINES		+= -DVERSION_STRING="\"vnds 1.4.14-pre\""
 
-ARCH		:= -march=armv5te -mtune=arm946e-s
+ARCH		:= -marm -mcpu=arm946e-s+nofp
+
+SPECS           := $(BLOCKSDS)/sys/crts/ds_arm9.specs
 
 WARNFLAGS	:= -Wall
 
 ifeq ($(SOURCES_CPP),)
-    LD	:= $(CC)
+	LIBS	+= -lc
 else
-    LD	:= $(CXX)
+	LIBS	+= -lstdc++ -lc
 endif
 
 INCLUDEFLAGS	:= $(foreach path,$(INCLUDEDIRS),-I$(path)) \
@@ -103,25 +106,22 @@ INCLUDEFLAGS	:= $(foreach path,$(INCLUDEDIRS),-I$(path)) \
 LIBDIRSFLAGS	:= $(foreach path,$(LIBDIRS),-L$(path)/lib)
 
 ASFLAGS		+= -x assembler-with-cpp $(DEFINES) $(ARCH) \
-		   -marm -mthumb-interwork $(INCLUDEFLAGS) \
+		   $(INCLUDEFLAGS) -specs=$(SPECS) \
 		   -ffunction-sections -fdata-sections
 
 CFLAGS		+= -std=gnu11 $(WARNFLAGS) $(DEFINES) $(ARCH) \
-		   -marm -mthumb-interwork $(INCLUDEFLAGS) -O2 -flto \
+		   $(INCLUDEFLAGS) -O2 -flto -specs=$(SPECS) \
 		   -ffunction-sections -fdata-sections \
 		   -fomit-frame-pointer
 
 CXXFLAGS	+= -std=gnu++14 $(WARNFLAGS) $(DEFINES) $(ARCH) \
-		   -marm -mthumb-interwork $(INCLUDEFLAGS) -O2 -flto \
+		   $(INCLUDEFLAGS) -O2 -flto -specs=$(SPECS) \
 		   -ffunction-sections -fdata-sections \
 		   -fno-exceptions -fno-rtti \
 		   -fomit-frame-pointer
 
-LDFLAGS		:= -marm -mthumb-interwork $(LIBDIRSFLAGS) \
-		   -Wl,-Map,$(MAP) -Wl,--gc-sections -nostdlib \
-		   -T$(BLOCKSDS)/sys/crts/ds_arm9.mem \
-		   -T$(BLOCKSDS)/sys/crts/ds_arm9.ld \
-		   -Wl,--no-warn-rwx-segments \
+LDFLAGS		:= $(LIBDIRSFLAGS) -specs=$(SPECS) \
+		   -Wl,-Map,$(MAP) \
 		   -Wl,--start-group $(LIBS) -lgcc -Wl,--end-group
 
 # Intermediate build files
@@ -155,7 +155,7 @@ all: $(ELF)
 
 $(ELF): $(OBJS)
 	@echo "  LD.9    $@"
-	$(V)$(LD) -o $@ $(OBJS) $(BLOCKSDS)/sys/crts/ds_arm9_crt0.o $(LDFLAGS)
+	$(V)$(LD) -o $@ $(OBJS) $(LDFLAGS)
 
 $(DUMP): $(ELF)
 	@echo "  OBJDUMP.9 $@"

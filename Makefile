@@ -12,7 +12,7 @@ NAME		:= vnds
 
 GAME_TITLE	:= VNDS
 GAME_SUBTITLE	:= Visual Novel Reader
-GAME_AUTHOR	:= 1.4.13-pre
+GAME_AUTHOR	:= 1.4.14-pre
 GAME_ICON	:= logo.bmp
 
 # DLDI and internal SD slot of DSi

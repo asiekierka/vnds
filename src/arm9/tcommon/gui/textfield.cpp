@@ -75,11 +75,11 @@ bool TextField::OnTouch(u32& down, u32& held, touchPosition touch) {
     }
     str[strL] = '\0';
 
-    Keyboard* defaultKdb = keyboardGetDefault();
+    const Keyboard* defaultKbd = keyboardGetDefault();
     Keyboard* kbd = keyboardInit(NULL, 0, BgType_Text4bpp, BgSize_T_256x512,
-    		defaultKdb->mapBase, defaultKdb->tileBase, true, true);
+    		defaultKbd->mapBase, defaultKbd->tileBase, true, true);
 	memset(bgGetMapPtr(kbd->background), 0, 256*32);
-	KeyMap* map = kbd->mappings[kbd->state];
+	const KeyMap* map = kbd->mappings[kbd->state];
 	dmaCopy(map->mapDataReleased, bgGetMapPtr(kbd->background),
 			map->width * map->height * kbd->grid_height * kbd->grid_width / 64 * 2);
 	keyboardShow();

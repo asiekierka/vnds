@@ -2,6 +2,7 @@
 #define T_FILEHANDLE_H
 
 #include <nds.h>
+#include <limits.h>
 #include <string.h>
 #include "dsunzip.h"
 
